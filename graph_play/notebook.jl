@@ -261,6 +261,9 @@ end
 # ╔═╡ 81f65b7f-01c5-4f57-9ec0-ad1d029b9807
 sol_segregation[n1*2+2:2:(n1+n2)*2, :]
 
+# ╔═╡ 899148e8-72aa-495e-92ca-2ab3f50609d8
+
+
 # ╔═╡ 00000000-0000-0000-0000-000000000001
 PLUTO_PROJECT_TOML_CONTENTS = """
 [deps]
@@ -992,9 +995,9 @@ uuid = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 
 [[Libffi_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "761a393aeccd6aa92ec3515e428c26bf99575b3b"
+git-tree-sha1 = "0b4a5d71f3e5200a7dff793393e09dfc2d874290"
 uuid = "e9f186c6-92d2-5b65-8a66-fee21dc1b490"
-version = "3.2.2+0"
+version = "3.2.2+1"
 
 [[Libgcrypt_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libgpg_error_jll", "Pkg"]
@@ -2024,5 +2027,6 @@ version = "0.9.1+5"
 # ╟─6fe4a4e5-4fbd-4c74-8e97-34e51a9fa8e2
 # ╠═7e913617-3967-4fe0-b225-328de916c57e
 # ╠═81f65b7f-01c5-4f57-9ec0-ad1d029b9807
+# ╠═899148e8-72aa-495e-92ca-2ab3f50609d8
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
