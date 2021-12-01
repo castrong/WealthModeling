@@ -73,13 +73,13 @@ First, select the number of people of kind 0 and the number of people of kind 1.
 
 # ╔═╡ 275281f2-42d3-436e-9938-7ed2d609603d
 md"""
-$n_0$ $(@bind n₀ Slider(1:10, show_value=true, default=5))
+ $n_0$ $(@bind n₀ Slider(0:5:100, show_value=true, default=5))
 """
 
 
 # ╔═╡ 5df6a088-883a-46ff-9b18-e9c646e04816
 md"""
-$n_1$: $(@bind n₁ Slider(1:10, show_value=true, default=5))
+ $n_1$ $(@bind n₁ Slider(1:100, show_value=true, default=5))
 """
 
 # ╔═╡ 91d2df7c-5907-4b3c-a608-5c931dd27bf2
@@ -89,7 +89,7 @@ Next select the average degree you would like each node to have.
 
 # ╔═╡ 0b7adeee-6d07-4985-8e13-a7fcd8183319
 md"""
-$n_c$ Min: 0 Max: n-1 = $(n₀ + n₁ - 1) $(@bind n_c Slider(0:n₀+n₁ - 1, show_value=true, default=3)) 
+ $n_c$ Min: 0 Max: n-1 = $(n₀ + n₁ - 1) $(@bind n_c Slider(0:n₀+n₁ - 1, show_value=true, default=3)) 
 """
 
 # ╔═╡ 8d9f6221-1174-4f30-b025-02ffb51d0313
@@ -126,16 +126,43 @@ $P(K = 1) = \frac{\binom{n_0}{2} + \binom{n_1}{2}}{\binom{n}{2}} = 1 - P(K = 0)$
 # ╔═╡ db97b5a9-a82d-43c6-a1d0-240a75bf8445
 P_K_1 = (binomial(n₀, 2) + binomial(n₁, 2)) / binomial(n, 2)
 
-# ╔═╡ bacd5795-0c0a-453e-ad2a-8a21a83b8831
-Rₕ_max = min(1/P_C_1, 1/P_K_1)
-
-# ╔═╡ e60d2846-c145-4817-a817-9601c2fdf178
+# ╔═╡ 46bcaa41-618c-47fe-8825-ebac4511d7c0
 md"""
-$R_h$ $(@bind Rₕ NumberField(0.0:0.05:Rₕ_max, default=1.0)) min: 0, max: $Rₕ_max 
-"""
 
-# ╔═╡ a8db484d-a316-4238-908b-fd7dba5f97e3
-@assert 0 ≤ Rₕ ≤ Rₕ_max "Rₕ must be within its bounds"
+We will define the quantity
+$R_h \equiv \frac{P(C = 1, K=1)}{P(C=1)P(K=1)} = \frac{P(C = 1 \mid K = 1)}{P(C = 1)} = \frac{P(K = 1 \mid C = 1)}{P(K=1)}$ as the homophily ratio. The second two of the three forms follow from expanding $P(C = 1, K=1)$ using the chain rule as $P(C = 1 \mid K = 1)P(K = 1)$ and $P(K = 1 \mid C = 1)P(C = 1)$ respectively.
+
+
+From Baye's theorem we know that
+
+$P(K = 1 \mid C = 1) = \frac{P(C = 1 \mid K = 1)}{P(C = 1)} P(K = 1) = R_h P(K=1)$
+
+And similarly, we have that
+
+$P(C = 1 \mid K = 1) = \frac{P(K = 1 \mid C = 1)}{P(K = 1)} P(C = 1) = R_h P(C = 1)$
+
+Given $n_0$, $n_0$, and $n_c$, this will impose a bound on $R_h$ since each of these quantities is a probability, and so must be in the interval $[0, 1]$. This gives us the expressions
+
+$0 \le R_h P(K=1) \le 1 \implies 0 \le R_h \le \frac{1}{P(K=1)}$
+
+and
+
+$0 \le R_h P(C = 1) \le 1 \implies 0 \le R_h \le \frac{1}{P(C = 1)}$
+
+Combining these two expressions, we see that
+
+$R_h \le R_{max} = \min\left(\frac{1}{P(C=1)}, \frac{1}{P(K=1)}\right)$
+"""
+#Conveniently, we have that this is equal to
+# $\frac{P(C = 1 \mid K = 1) P(K=1)}{P(C = 1) P(K=1)} = \frac{P(C = 1, K = 1)}{P(C = 1)P(K = 1)}$
+
+#  $P(K=1 \mid C = 1) \le 1 \implies R_h P(K=1) \le 1 \implies R_h \le \frac{1}{P(K=1)}$
+#  Looking at Baye's rule in the other direction we have
+#  $P(C=1 \mid K=1) = \frac{P(K=1 \mid C = 1)}{P(K=1)} P(C=1)$
+# -->
+
+# ╔═╡ bacd5795-0c0a-453e-ad2a-8a21a83b8831
+Rₕₘₐₓ = min(1/P_C_1, 1/P_K_1)
 
 # ╔═╡ fc8e36ab-0b29-409c-ae59-67d4cca17ea4
 md"""
@@ -151,25 +178,75 @@ md"""
 $R_h \equiv \frac{P(C = 1 \mid K = 1)}{P(C = 1)} \implies P(C = 1 \mid K = 1) = R_h P(C = 1)$
 """
 
-# ╔═╡ 359558b8-8d69-44aa-b769-f146dd30fe88
-P_C_1_K_1 = Rₕ * P_C_1
-
 # ╔═╡ 8561a24a-0c47-458b-a026-f840b02a01f8
 md"""
 $P(C = 0 \mid K = 1) = 1 - P(C = 1 \mid K = 1)$
 """
 
+# ╔═╡ 77f5e60e-5c13-43f8-8d59-eb810fa9aeff
+# md"""
+# $
+# \begin{align}P(C = 1) = \frac{n_c}{n-1} \implies \\
+# P(C = 1 \mid K = 0) P(K = 0) + P(C = 1 \mid K = 1) P(K = 1) = \frac{n_c}{n-1} \implies \\ 
+# P(C = 1 \mid K = 0) = \frac{\frac{n}{2\binom{n}{2}}  n_c - P(C = 1 \mid K = 1)P(K = 1)}{P(K=0)} = \\
+# \frac{\frac{n_c}{n-1} - P(C = 1 \mid K = 1)P(K = 1)}{P(K=0)}
+# \end{align}$
+# """ 
+md"""
+$
+\begin{align}P(C = 1) =
+P(C = 1 \mid K = 0) P(K = 0) + P(C = 1 \mid K = 1) P(K = 1) \implies \\ 
+P(C = 1 \mid K = 0) = \frac{P(C=1) - P(C = 1 \mid K = 1)P(K = 1)}{P(K=0)}
+\end{align}$
+Note that 
+
+$P(C=1) = \frac{n_c}{n-1}$
+""" 
+
+# ╔═╡ 758440f9-018c-47d9-8728-83137e4c8e6c
+md"""
+We can use the definition that $R_h P(C=1) = P(C = 1 \mid K = 1)$ to find another constraint on $R_h$ by rewriting our previous expression as  
+
+$P(C = 1 \mid K = 0) = \frac{P(C=1) - R_h P(C = 1) P(K=1)}{P(K=0)}$
+
+Since this must be between 0 and 1, this will apply an additional constraint to $R_h$ given our choice of $n_0$, $n_1$, and $n_c$
+
+$\begin{align}
+0 &\le \frac{P(C=1) - R_h P(C = 1) P(K=1)}{P(K=0)} \le 1 \implies \\ 
+0 &\ge \frac{R_h P(C=1)P(K=1) - P(C=1)}{P(K=0)} \ge -1  \implies \\ 
+0 &\ge R_h P(C=1)P(K=1) - P(C=1) \ge -P(K=0) \implies \\
+P(C=1) &\ge R_h P(C = 1)P(K=1) \ge P(C=1) -P(K=0) \implies  \\ 
+\frac{P(C=1)}{P(C=1)P(K=1)} &\ge R_h \ge \frac{P(C=1) - P(K=0)}{P(C=1)P(K=1)} \implies \\ 
+\frac{1}{P(K=1)} &\ge R_h \ge \frac{1}{P(K=1)} - \frac{P(K=0)}{P(C=1)P(K=1)} = \frac{P(C = 1) - P(K=0)}{P(C=1)P(K=1)}
+\end{align}$ 
+
+Note that the upper bound on $R_h$ matches one of the previously found upper bounds.
+
+TODO: Is there an issue when $P(C = 1) = 0$? with canceling out the $P(C=1)$ term?
+"""
+
+# ╔═╡ feb42c46-0c70-4f51-a7a8-9a86e19a8b96
+Rₕₘᵢₙ = max(0, (P_C_1 - P_K_0) / (P_C_1 * P_K_1))
+
+# ╔═╡ e60d2846-c145-4817-a817-9601c2fdf178
+md"""
+ $R_h$ min: $Rₕₘᵢₙ, max: $Rₕₘₐₓ  $(@bind Rₕ NumberField(Rₕₘᵢₙ:0.05:Rₕₘₐₓ, default=Rₕₘₐₓ)) 
+"""
+
+# ╔═╡ 359558b8-8d69-44aa-b769-f146dd30fe88
+P_C_1_K_1 = Rₕ * P_C_1
+
 # ╔═╡ e9d3348b-de6b-4f19-b5c9-e6f5e811252a
 P_C_0_K_1 = 1 - P_C_1_K_1
 
-# ╔═╡ 77f5e60e-5c13-43f8-8d59-eb810fa9aeff
+# ╔═╡ a8db484d-a316-4238-908b-fd7dba5f97e3
+@assert Rₕₘᵢₙ ≤ Rₕ ≤ Rₕₘₐₓ "Rₕ must be within its bounds"
+
+# ╔═╡ 6d0d6edb-545f-49a0-b3c4-d4b56106ec91
 md"""
-$
-\begin{align}P(C = 1) = \frac{n}{2\binom{n}{2}}  n_c \implies \\
-P(C = 1 \mid K = 0) P(K = 0) + P(C = 1 \mid K = 1) P(K = 1) = \frac{n}{2\binom{n}{2}} \implies \\ 
-P(C = 1 \mid K = 0) = \frac{\frac{n}{2\binom{n}{2}}  n_c - P(C = 1 \mid K = 1)P(K = 1)}{P(K=0)}
-\end{align}$
-""" 
+Now we can apply a similar process to find a bound that derives from
+P(C = 0 \mid K = 1)
+"""
 
 # ╔═╡ 06e5cded-1035-441b-a4fc-db1b0aa3900e
 P_C_1_K_0 = (n * n_c / 2 / binomial(n, 2) - P_C_1_K_1 * P_K_1) / P_K_0
@@ -208,6 +285,7 @@ begin
 	end
 	# Fill it in symmetrically
 	A_adj = (A_adj + A_adj')
+	println(A_adj)
 end
 
 # ╔═╡ d0b66bc0-47c0-4b35-b8a2-0cbd9e6f3744
@@ -220,10 +298,10 @@ graph = Graph(A_adj)
 
 # ╔═╡ 88fcff96-90d8-4bb3-b21c-641b937a30e6
 begin
-		nodesize = [Graphs.outdegree(graph, v)*2 + 3 for v in Graphs.vertices(graph)]
+		nodesize = [Graphs.outdegree(graph, v)*2 + 10 for v in Graphs.vertices(graph)]
 		color_0, color_1 = colorant"yellow", colorant"pink" #distinguishable_colors(2, colorant"blue")
 	node_colors = [repeat([color_0], n₀); repeat([color_1], n₁)]
-	gplot(graph, nodelabel=1:n, nodesize=nodesize, nodefillc=node_colors)
+	gplot(graph, nodefillc=node_colors)
 end
 
 # ╔═╡ e8392c25-1218-49c6-b9c9-af4deabab6ff
@@ -243,6 +321,21 @@ begin
 	x = [5]
 	C = [1, 2, 3, 4];
 	repeat(x, 5)
+end
+
+# ╔═╡ 5f1f8f9f-7386-4636-8755-e4dd9f18bed7
+function visualize_graph(graph, n₀, n₁)
+	nodesize = [Graphs.outdegree(graph, v)*2 + 10 for v in Graphs.vertices(graph)]
+	color_0, color_1 = colorant"yellow", colorant"pink"
+	node_colors = [repeat([color_0], n₀); repeat([color_1], n₁)]
+	gplot(graph, nodefillc=node_colors)
+end
+
+# ╔═╡ 80fb421f-5ff9-44ad-a2e5-c95cf7dc197f
+begin
+	g3_A = [0.0 1.0 1.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 1.0 1.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0]
+	graph_3 = Graph(g3_A)
+	visualize_graph(graph_3, 10, 10)
 end
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -1960,7 +2053,9 @@ version = "0.9.1+5"
 # ╟─275281f2-42d3-436e-9938-7ed2d609603d
 # ╟─5df6a088-883a-46ff-9b18-e9c646e04816
 # ╟─91d2df7c-5907-4b3c-a608-5c931dd27bf2
-# ╠═0b7adeee-6d07-4985-8e13-a7fcd8183319
+# ╟─0b7adeee-6d07-4985-8e13-a7fcd8183319
+# ╠═e60d2846-c145-4817-a817-9601c2fdf178
+# ╠═88fcff96-90d8-4bb3-b21c-641b937a30e6
 # ╟─8d9f6221-1174-4f30-b025-02ffb51d0313
 # ╠═55917de6-8055-487c-b4f4-6308a71fffec
 # ╠═58165246-51a7-403b-9327-49d10e845ab0
@@ -1969,8 +2064,8 @@ version = "0.9.1+5"
 # ╠═84e69a96-9e59-470a-94fc-94b2fb4178e1
 # ╟─a76ff7fb-e992-4232-90cb-a37e1cd3b3a9
 # ╠═db97b5a9-a82d-43c6-a1d0-240a75bf8445
+# ╟─46bcaa41-618c-47fe-8825-ebac4511d7c0
 # ╠═bacd5795-0c0a-453e-ad2a-8a21a83b8831
-# ╟─e60d2846-c145-4817-a817-9601c2fdf178
 # ╟─a8db484d-a316-4238-908b-fd7dba5f97e3
 # ╠═fc8e36ab-0b29-409c-ae59-67d4cca17ea4
 # ╟─0e94ab59-4e98-4174-bf42-ef9911018974
@@ -1979,6 +2074,9 @@ version = "0.9.1+5"
 # ╟─8561a24a-0c47-458b-a026-f840b02a01f8
 # ╠═e9d3348b-de6b-4f19-b5c9-e6f5e811252a
 # ╟─77f5e60e-5c13-43f8-8d59-eb810fa9aeff
+# ╟─758440f9-018c-47d9-8728-83137e4c8e6c
+# ╠═feb42c46-0c70-4f51-a7a8-9a86e19a8b96
+# ╠═6d0d6edb-545f-49a0-b3c4-d4b56106ec91
 # ╠═06e5cded-1035-441b-a4fc-db1b0aa3900e
 # ╟─65d42436-a998-4efc-ad83-192b57f4dc3f
 # ╠═3f71b62b-3f11-48e9-b253-88b73dff5974
@@ -1986,8 +2084,9 @@ version = "0.9.1+5"
 # ╠═5631b467-7ed7-4c33-a663-249684065120
 # ╟─d0b66bc0-47c0-4b35-b8a2-0cbd9e6f3744
 # ╠═4b4b269a-1aef-480c-bdf3-9d74b51c7bc4
-# ╠═88fcff96-90d8-4bb3-b21c-641b937a30e6
 # ╠═e8392c25-1218-49c6-b9c9-af4deabab6ff
 # ╠═3c526d1f-5dc5-451f-80d8-c41c26f4feb0
+# ╠═5f1f8f9f-7386-4636-8755-e4dd9f18bed7
+# ╠═80fb421f-5ff9-44ad-a2e5-c95cf7dc197f
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002

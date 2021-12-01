@@ -14,23 +14,11 @@ macro bind(def, element)
     end
 end
 
-# ╔═╡ 661c49d0-53b4-4ba3-beb4-4dd822e6d961
-using Pkg
-
 # ╔═╡ 54506f08-427c-11ec-0076-8b506e1f844c
 using NetworkDynamics, DifferentialEquations, Plots, LightGraphs, TikzGraphs, OrdinaryDiffEq, PlutoUI, Statistics
 
-# ╔═╡ a5297339-727c-4805-8ae0-ba5b1a2a2390
+# ╔═╡ 52e35df3-15da-4fe1-9513-c77d4f8ce521
 using LightGraphs.LinAlg
-
-# ╔═╡ 052bd3fd-3a9c-43a3-8e90-e3604fb8b1e6
-#Pkg.add("NetworkDynamics")
-#Pkg.add("DifferentialEquations")
-#Pkg.add("Plots")
-#Pkg.add("LightGraphs")
-#Pkg.add("TikzGraphs")
-#Pkg.add("OrdinaryDiffEq")
-#Pkg.add("PlutoUI")
 
 # ╔═╡ c515acf6-fe6f-497e-b5d9-f71f0ad9b526
 # Helper function to plot a standard format graph
@@ -50,13 +38,17 @@ md"""
 # ╔═╡ 787f4091-e395-4182-8f70-f00a3f824abb
 @bind tail_length Slider(1:10)
 
-
 # ╔═╡ 19876b1e-da88-4d43-8248-5d5c429be1d7
 begin
 	g = wheel_graph(N)
-	plot_graph(g)
-	#graphplot(g, curves=false)
+	#plot_graph(g)
 end
+
+# ╔═╡ bdfd4f02-9966-445b-a0ff-d41fc7683d6e
+graph1 = wheel_graph(N)
+
+# ╔═╡ ba50df3e-8fe9-447c-b686-c9cfc14d4696
+plot_graph(graph1)
 
 # ╔═╡ f61ecce7-ec37-4047-9f5f-d87ac1c3e71e
 md"""
@@ -70,7 +62,7 @@ begin
 		add_edge!(g, nv(g) - 1, nv(g))
 	end
 	num_nodes = nv(g)
-	plot_graph(g)
+	#plot_graph(g)
 end
 
 # ╔═╡ 8e86706b-ff60-48a7-ab74-6030a86acb54
@@ -119,6 +111,10 @@ begin
 	Plots.plot(sol, vars = syms_containing(nd, "v"), fmt = :png)
 end
 
+# ╔═╡ 7eeb5a3d-a817-4dde-8809-cc2e6ab757c4
+nd2 = network_dynamics(nd_vertex, nd_edge, g)
+
+
 # ╔═╡ 83c18c6a-0daf-477f-8c41-0ae393c13467
 md"""
 ## Simulate a simple income + wealth system on the graph 
@@ -126,7 +122,7 @@ md"""
 
 # ╔═╡ d18a8a59-90ba-45b8-9569-5f21ca8a5be7
 begin
-	wealth_appreciation = 0.01
+	wealth_appreciation = 0.0
 	savings_rate = 0.5
 	income_growth_rate = 0.00
 	
@@ -166,10 +162,8 @@ end
 # ╔═╡ bf1db9a1-0680-4e3f-b933-361991a47898
 Plots.plot(sol_wealth, vars = syms_containing(nd_wealth, "income"), fmt = :png)
 
-
 # ╔═╡ c671e905-e061-4cc5-af92-0a8ca1fcd7de
 Plots.plot(sol_wealth, vars = syms_containing(nd_wealth, "wealth"), fmt = :png)
-
 
 # ╔═╡ bdba437a-fe38-41f0-8501-8f145e12e73f
 md"""
@@ -210,7 +204,7 @@ begin
 	# 1:n1 will be group 1, n1+1:n1+n2 will be group 2
 	segregated_g = blockdiag(g1, g2)
 	[add_edge!(segregated_g, rand(1:n1), rand(n1+1:n1+n2)) for i = 1:n_connect]
-	plot_graph(segregated_g)
+	#plot_graph(segregated_g)
 end
 
 # ╔═╡ 35f9484d-0cf5-4f18-9d08-8884f8aba07e
@@ -241,7 +235,6 @@ end
 # ╔═╡ 62fcac3c-4e04-4cb2-afcf-7193042337ef
 Plots.plot(sol_segregation, vars = syms_containing(nd_segregation, "income"), fmt = :png)
 
-
 # ╔═╡ b75981a4-5425-456f-a62d-b2c011f450bf
 Plots.plot(sol_segregation, vars = syms_containing(nd_segregation, "wealth"), fmt = :png)
 
@@ -262,6 +255,155 @@ end
 sol_segregation[n1*2+2:2:(n1+n2)*2, :]
 
 # ╔═╡ 899148e8-72aa-495e-92ca-2ab3f50609d8
+md"""
+## Plots for Presentation
+"""
+
+# ╔═╡ 3aa51315-9f33-49e3-b7cc-995a0927664d
+# function visualize_graph(graph, n₀, n₁)
+# 	nodesize = [Graphs.outdegree(graph, v)*2 + 10 for v in Graphs.vertices(graph)]
+# 	color_0, color_1 = colorant"yellow", colorant"pink"
+# 	node_colors = [repeat([color_0], n₀); repeat([color_1], n₁)]
+# 	gplot(graph, nodefillc=node_colors)
+# end
+
+# ╔═╡ 21ed47b0-2948-495a-b4c6-fb0d75264a88
+homophilies = [1.0, 2.0, 2.1]
+
+# ╔═╡ 9358c530-f681-4130-befb-5bbc08cc09ea
+# Set the initial conditions
+begin
+	income_ratio = 0.5 
+	n_1 = 10
+	n_2 = 10
+	income_0 = [rand(n_1); rand(n_2)*income_ratio]
+	wealth_0 = zeros(n_1 + n_2)
+	x0_presentation = interleave_vectors(income_0, wealth_0)
+end
+
+# ╔═╡ 474575e2-edfd-4b37-bd4b-83ddaa6eaced
+begin
+	# First graph, homophily = 1.0
+	g1_A = [0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 0.0 0.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0; 0.0 1.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 1.0 0.0 0.0; 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 1.0 0.0 1.0 0.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0; 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0]
+	graph_1 = Graph(g1_A)
+	#visualize_graph(graph_1, 10, 10)
+end
+
+# ╔═╡ 69726107-5921-4a0d-97f8-ed784bf5eb15
+begin
+	# Second graph, homophily = 2.0
+	g2_A = [0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0; 1.0 0.0 1.0 1.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 0.0 1.0 0.0 1.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 1.0 0.0 1.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 1.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 1.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 1.0 0.0 1.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0; 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 1.0 1.0 0.0 0.0 1.0 1.0 0.0]
+	graph_2 = Graph(g2_A)
+	#visualize_graph(graph_2, 10, 10)
+end
+
+# ╔═╡ 4247e3c0-49b0-445c-a175-1fc3664f1545
+begin
+	g3_A = [0.0 1.0 1.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 0.0 1.0 1.0 1.0 1.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 1.0 1.0 0.0 1.0 1.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 1.0 1.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 1.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 1.0 0.0 1.0 1.0 1.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0 0.0 1.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 1.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0 0.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 1.0 1.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 0.0 1.0 1.0 0.0 1.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 1.0 1.0 1.0 0.0 0.0]
+	graph_3 = Graph(g3_A)
+	#visualize_graph(graph_3, 10, 10)
+end
+
+# ╔═╡ 66469a7a-744a-4b5a-aad9-16de0c38bf0c
+# Simulate the system for g1
+begin
+	time_interval_1 = (0., 50.)
+	nd_presentation_1 = network_dynamics(nd_vertex_wealth_income, nd_edge_income, graph_1)
+	ode_prob_presentation_1 = ODEProblem(nd_presentation_1, x0_presentation, time_interval_1)
+	sol_presentation_1 = solve(ode_prob_presentation_1, Tsit5());	
+end
+
+# ╔═╡ 0cd21d75-13a1-4e4d-94a6-3c48e39c63c5
+begin
+	avg_wealth1_1 = mean(sol_presentation_1[2:2:n_1*2, :], dims=1)
+	avg_wealth2_1 = mean(sol_presentation_1[n_1*2+2:2:(n_1+n_2)*2, :], dims=1)
+	gap_1 = avg_wealth1_1 ./ avg_wealth2_1
+	Plots.plot(sol_presentation_1.t[2:end], gap_1[2:end], ylim=[0.95, 1.9])
+end
+
+# ╔═╡ 3fdb5d59-02f8-447e-9bd6-d97eaf3285d5
+Plots.plot(sol_presentation_1, vars = syms_containing(nd_presentation_1, "income"), fmt = :png)
+
+# ╔═╡ 1ae6eccd-1388-4b4a-b70f-fb5199d649da
+Plots.plot(sol_presentation_1, vars = syms_containing(nd_presentation_1, "wealth"), fmt = :png)
+
+# ╔═╡ d1e86dbf-d4b3-4032-8b19-3928f140da91
+# Simulate the system for g2
+begin
+	time_interval_2 = (0., 50.)
+	nd_presentation_2 = network_dynamics(nd_vertex_wealth_income, nd_edge_income, graph_2)
+	ode_prob_presentation_2 = ODEProblem(nd_presentation_2, x0_presentation, time_interval_2)
+	sol_presentation_2 = solve(ode_prob_presentation_2, Tsit5());	
+end
+
+# ╔═╡ 42444dfb-d49b-4dde-ac5c-d5d4262430c7
+begin
+	avg_wealth1_2 = mean(sol_presentation_2[2:2:n_1*2, :], dims=1)
+	avg_wealth2_2 = mean(sol_presentation_2[n_1*2+2:2:(n_1+n_2)*2, :], dims=1)
+	gap_2 = avg_wealth1_2 ./ avg_wealth2_2
+	Plots.plot(sol_presentation_2.t[2:end], gap_2[2:end], ylim=[0.95, 1.9])
+end
+
+# ╔═╡ 639d09b0-845d-4414-9f99-d6fe6cb2790c
+Plots.plot(sol_presentation_2, vars = syms_containing(nd_presentation_2, "income"), fmt = :png)
+
+# ╔═╡ fee809a0-ed01-45d1-9a4d-a43e4fc5170c
+Plots.plot(sol_presentation_2, vars = syms_containing(nd_presentation_2, "wealth"), fmt = :png)
+
+# ╔═╡ 1e383174-0bd3-4924-b109-c009aaabcce5
+# Simulate the system for g3
+begin
+	time_interval_3 = (0., 50.)
+	nd_presentation_3 = network_dynamics(nd_vertex_wealth_income, nd_edge_income, graph_3)
+	ode_prob_presentation_3 = ODEProblem(nd_presentation_3, x0_presentation, time_interval_3)
+	sol_presentation_3 = solve(ode_prob_presentation_3, Tsit5());	
+end
+
+# ╔═╡ 3388debe-f326-4e9b-9589-85ee1a5de9a7
+begin
+	avg_wealth1_3 = mean(sol_presentation_3[2:2:n_1*2, :], dims=1)
+	avg_wealth2_3 = mean(sol_presentation_3[n_1*2+2:2:(n_1+n_2)*2, :], dims=1)
+	gap_3 = avg_wealth1_3 ./ avg_wealth2_3
+	Plots.plot(sol_presentation_3.t[2:end], gap_3[2:end])
+end
+
+# ╔═╡ 1d9ea49c-5c57-466f-b339-a4976b23d15e
+begin
+	Plots.plot(sol_presentation_3.t[2:end], gap_3[2:end], label="Rₕ = 2.1, Segregated", color="red", legend=:right)
+	Plots.plot!(sol_presentation_2.t[2:end], gap_2[2:end], label="Rₕ = 2.0, Few Connections", color="blue")
+
+		Plots.plot!(sol_presentation_1.t[2:end], gap_1[2:end], label="Rₕ = 1.0, Integrated", color="black", xlabel="Time", ylabel="Wealth Gap", title="Wealth Gap vs. Time")
+end
+
+# ╔═╡ d691e252-dc6b-4303-a0ba-ee2ffc7b7d4c
+begin
+	avg_income_cluster1 = mean(sol_presentation_3[1:2:n_1*2-1, :], dims=1)
+	avg_income_cluster2 = mean(sol_presentation_3[n_1*2+1:2:(n_1+n_2)*2-1, :], dims=1)
+	Plots.plot(avg_income_cluster1', label="average income cluster 1")
+	Plots.plot!(avg_income_cluster2', label="average income cluster 2")
+	#gap_3 = avg_wealth1_3 ./ avg_wealth2_3
+	#Plots.plot(sol_presentation_3.t[2:end], gap_3[2:end])
+end
+
+# ╔═╡ 6143e304-2ef8-4355-baeb-4c8998a388ad
+mean(sol_presentation_3[1:2:n_1*2-1, :], dims=1)
+# begin
+# 	avg_wealth1_3 = mean(sol_presentation_3[2:2:n_1*2, :], dims=1)
+# 	avg_wealth2_3 = mean(sol_presentation_3[n_1*2+2:2:(n_1+n_2)*2, :], dims=1)
+# 	gap_3 = avg_wealth1_3 ./ avg_wealth2_3
+# 	Plots.plot(sol_presentation_3.t[2:end], gap_3[2:end])
+# end
+
+# ╔═╡ 7569ed82-d18f-4468-8c87-0073e4ba6eaf
+
+
+# ╔═╡ 51d0e2bf-b29e-4b8c-95bc-d64d245dea10
+
+
+# ╔═╡ 4f9c4211-b933-4b7f-9826-1ed6d4efccce
+sum(income_0[1:10]) / sum(income_0[11:end])
+
+# ╔═╡ a3aa501c-6676-45d1-9e98-2859b02de8bb
 
 
 # ╔═╡ 00000000-0000-0000-0000-000000000001
@@ -271,7 +413,6 @@ DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 NetworkDynamics = "22e9dc34-2a0d-11e9-0de0-8588d035468b"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
-Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlutoUI = "7f904dfe-b85e-4ff6-b463-dae2292396a8"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
@@ -284,7 +425,7 @@ NetworkDynamics = "~0.6.0"
 OrdinaryDiffEq = "~5.67.0"
 Plots = "~1.23.6"
 PlutoUI = "~0.7.19"
-TikzGraphs = "~1.2.0"
+TikzGraphs = "~1.3.0"
 """
 
 # ╔═╡ 00000000-0000-0000-0000-000000000002
@@ -293,9 +434,9 @@ PLUTO_MANIFEST_TOML_CONTENTS = """
 
 [[AbstractPlutoDingetjes]]
 deps = ["Pkg"]
-git-tree-sha1 = "0bc60e3006ad95b4bb7497698dd7c6d649b9bc06"
+git-tree-sha1 = "abb72771fd8895a7ebd83d5632dc4b989b022b5b"
 uuid = "6e696c72-6542-2067-7265-42206c756150"
-version = "1.1.1"
+version = "1.1.2"
 
 [[AbstractTrees]]
 git-tree-sha1 = "03e0550477d86222521d254b741d470ba17ea0b5"
@@ -324,9 +465,9 @@ version = "0.1.0"
 
 [[ArrayInterface]]
 deps = ["Compat", "IfElse", "LinearAlgebra", "Requires", "SparseArrays", "Static"]
-git-tree-sha1 = "e527b258413e0c6d4f66ade574744c94edef81f8"
+git-tree-sha1 = "265b06e2b1f6a216e0e8f183d28e4d354eab3220"
 uuid = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
-version = "3.1.40"
+version = "3.2.1"
 
 [[ArrayLayouts]]
 deps = ["FillArrays", "LinearAlgebra", "SparseArrays"]
@@ -434,9 +575,9 @@ version = "3.15.0"
 
 [[ColorTypes]]
 deps = ["FixedPointNumbers", "Random"]
-git-tree-sha1 = "024fe24d83e4a5bf5fc80501a314ce0d1aa35597"
+git-tree-sha1 = "32a2b8af383f11cbb65803883837a149d10dfe8a"
 uuid = "3da002f7-5984-5a60-b8a6-cbb66c0b333f"
-version = "0.11.0"
+version = "0.10.12"
 
 [[Colors]]
 deps = ["ColorTypes", "FixedPointNumbers", "Reexport"]
@@ -536,9 +677,9 @@ version = "0.1.1"
 
 [[DelayDiffEq]]
 deps = ["ArrayInterface", "DataStructures", "DiffEqBase", "LinearAlgebra", "Logging", "NonlinearSolve", "OrdinaryDiffEq", "Printf", "RecursiveArrayTools", "Reexport", "UnPack"]
-git-tree-sha1 = "6eba402e968317b834c28cd47499dd1b572dd093"
+git-tree-sha1 = "9edf8c0f27c16df239d31dd55b154096e4c41cda"
 uuid = "bcd4f6db-9728-5f36-b5f7-82caef46ccdb"
-version = "5.31.1"
+version = "5.31.2"
 
 [[DelimitedFiles]]
 deps = ["Mmap"]
@@ -546,9 +687,9 @@ uuid = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 
 [[DensityInterface]]
 deps = ["InverseFunctions", "Test"]
-git-tree-sha1 = "794daf62dce7df839b8ed446fc59c68db4b5182f"
+git-tree-sha1 = "80c3e8639e3353e5d2912fb3a1916b8455e2494b"
 uuid = "b429d917-457f-4dbc-8f4c-0cc954292b1d"
-version = "0.3.3"
+version = "0.4.0"
 
 [[DiffEqBase]]
 deps = ["ArrayInterface", "ChainRulesCore", "DEDataArrays", "DataStructures", "Distributions", "DocStringExtensions", "FastBroadcast", "ForwardDiff", "FunctionWrappers", "IterativeSolvers", "LabelledArrays", "LinearAlgebra", "Logging", "MuladdMacro", "NonlinearSolve", "Parameters", "PreallocationTools", "Printf", "RecursiveArrayTools", "RecursiveFactorization", "Reexport", "Requires", "SciMLBase", "Setfield", "SparseArrays", "StaticArrays", "Statistics", "SuiteSparse", "ZygoteRules"]
@@ -594,9 +735,9 @@ version = "1.0.3"
 
 [[DiffRules]]
 deps = ["LogExpFunctions", "NaNMath", "Random", "SpecialFunctions"]
-git-tree-sha1 = "3287dacf67c3652d3fed09f4c12c187ae4dbb89a"
+git-tree-sha1 = "d8f468c5cd4d94e86816603f7d18ece910b4aaf1"
 uuid = "b552c78f-8df3-52c6-915a-8e097449b14b"
-version = "1.4.0"
+version = "1.5.0"
 
 [[DifferentialEquations]]
 deps = ["BoundaryValueDiffEq", "DelayDiffEq", "DiffEqBase", "DiffEqCallbacks", "DiffEqFinancial", "DiffEqJump", "DiffEqNoiseProcess", "DiffEqPhysics", "DimensionalPlotRecipes", "LinearAlgebra", "MultiScaleArrays", "OrdinaryDiffEq", "ParameterizedFunctions", "Random", "RecursiveArrayTools", "Reexport", "SteadyStateDiffEq", "StochasticDiffEq", "Sundials"]
@@ -622,9 +763,9 @@ uuid = "8ba89e20-285c-5b6f-9357-94700520ee1b"
 
 [[Distributions]]
 deps = ["ChainRulesCore", "DensityInterface", "FillArrays", "LinearAlgebra", "PDMats", "Printf", "QuadGK", "Random", "SparseArrays", "SpecialFunctions", "Statistics", "StatsBase", "StatsFuns", "Test"]
-git-tree-sha1 = "cce8159f0fee1281335a04bbf876572e46c921ba"
+git-tree-sha1 = "7f3bec11f4bcd01bc1f507ebce5eadf1b0a78f47"
 uuid = "31c24e10-a181-5473-b8eb-7969acd0382f"
-version = "0.25.29"
+version = "0.25.34"
 
 [[DocStringExtensions]]
 deps = ["LibGit2"]
@@ -656,9 +797,9 @@ version = "2.2.3+0"
 
 [[EllipsisNotation]]
 deps = ["ArrayInterface"]
-git-tree-sha1 = "9aad812fb7c4c038da7cab5a069f502e6e3ae030"
+git-tree-sha1 = "3fe985505b4b667e1ae303c9ca64d181f09d5c05"
 uuid = "da5c29d0-fa7d-589e-88eb-ea29b0a81949"
-version = "1.1.1"
+version = "1.1.3"
 
 [[Expat_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -668,9 +809,9 @@ version = "2.2.10+0"
 
 [[ExponentialUtilities]]
 deps = ["ArrayInterface", "LinearAlgebra", "Printf", "Requires", "SparseArrays"]
-git-tree-sha1 = "cb39752c2a1f83bbe0fda393c51c480a296042ad"
+git-tree-sha1 = "1b873816d2cfc8c0fcb1edcb08e67fdf630a70b7"
 uuid = "d4d017d3-3776-5f7e-afef-a10c40355c18"
-version = "1.10.1"
+version = "1.10.2"
 
 [[ExprTools]]
 git-tree-sha1 = "b7e3d17636b348f005f11040025ae8c6f645fe92"
@@ -812,9 +953,9 @@ version = "1.0.2"
 
 [[HTTP]]
 deps = ["Base64", "Dates", "IniFile", "Logging", "MbedTLS", "NetworkOptions", "Sockets", "URIs"]
-git-tree-sha1 = "14eece7a3308b4d8be910e265c724a6ba51a9798"
+git-tree-sha1 = "0fa77022fe4b511826b39c894c90daf5fce3334a"
 uuid = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-version = "0.9.16"
+version = "0.9.17"
 
 [[HarfBuzz_jll]]
 deps = ["Artifacts", "Cairo_jll", "Fontconfig_jll", "FreeType2_jll", "Glib_jll", "Graphite2_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Pkg"]
@@ -935,9 +1076,9 @@ version = "2.1.0+0"
 
 [[JuliaFormatter]]
 deps = ["CSTParser", "CommonMark", "DataStructures", "Pkg", "Tokenize"]
-git-tree-sha1 = "e7092df00019dab7ab81154df576c975fa6e47a3"
+git-tree-sha1 = "e1a91af84efba5228480bd20aeef1dd902d553cf"
 uuid = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
-version = "0.18.1"
+version = "0.19.2"
 
 [[LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -957,10 +1098,10 @@ uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 version = "1.3.0"
 
 [[LabelledArrays]]
-deps = ["ArrayInterface", "LinearAlgebra", "MacroTools", "StaticArrays"]
-git-tree-sha1 = "fa07d4ee13edf79a6ac2575ad28d9f43694e1190"
+deps = ["ArrayInterface", "ChainRulesCore", "LinearAlgebra", "MacroTools", "StaticArrays"]
+git-tree-sha1 = "3609bbf5feba7b22fb35fe7cb207c8c8d2e2fc5b"
 uuid = "2ee39098-c373-598a-b85f-a56591580800"
-version = "1.6.6"
+version = "1.6.7"
 
 [[Latexify]]
 deps = ["Formatting", "InteractiveUtils", "LaTeXStrings", "MacroTools", "Markdown", "Printf", "Requires"]
@@ -1131,9 +1272,9 @@ uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
 [[ModelingToolkit]]
 deps = ["AbstractTrees", "ArrayInterface", "ConstructionBase", "DataStructures", "DiffEqBase", "DiffEqCallbacks", "DiffEqJump", "DiffRules", "Distributed", "Distributions", "DocStringExtensions", "DomainSets", "Graphs", "IfElse", "InteractiveUtils", "JuliaFormatter", "LabelledArrays", "Latexify", "Libdl", "LinearAlgebra", "MacroTools", "NaNMath", "NonlinearSolve", "RecursiveArrayTools", "Reexport", "Requires", "RuntimeGeneratedFunctions", "SafeTestsets", "SciMLBase", "Serialization", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicUtils", "Symbolics", "UnPack", "Unitful"]
-git-tree-sha1 = "f2cb110abd4874d3a78c4ce6dc54aca712f36dac"
+git-tree-sha1 = "d9bbe2b0141a2387dcb6cd00a7019a5b39d7d8b9"
 uuid = "961ee093-0014-501f-94e3-6117800e7a78"
-version = "7.1.1"
+version = "7.1.3"
 
 [[MozillaCACerts_jll]]
 uuid = "14a3606d-f60d-562e-9121-12d972cd8159"
@@ -1262,9 +1403,9 @@ version = "8.44.0+0"
 
 [[PDMats]]
 deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse"]
-git-tree-sha1 = "c8b8775b2f242c80ea85c83714c64ecfa3c53355"
+git-tree-sha1 = "ee26b350276c51697c9c2d88a072b339f9f03d73"
 uuid = "90014a1f-27ba-587c-ab20-58faa44d9150"
-version = "0.11.3"
+version = "0.11.5"
 
 [[ParameterizedFunctions]]
 deps = ["DataStructures", "DiffEqBase", "DocStringExtensions", "Latexify", "LinearAlgebra", "ModelingToolkit", "Reexport", "SciMLBase"]
@@ -1397,9 +1538,9 @@ uuid = "e6cf234a-135c-5ec9-84dd-332b85af5143"
 version = "1.5.3"
 
 [[RecipesBase]]
-git-tree-sha1 = "44a75aa7a527910ee3d1751d1f0e4148698add9e"
+git-tree-sha1 = "6bf3f380ff52ce0832ddd3a2a7b9538ed1bcca7d"
 uuid = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
-version = "1.1.2"
+version = "1.2.1"
 
 [[RecipesPipeline]]
 deps = ["Dates", "NaNMath", "PlotUtils", "RecipesBase"]
@@ -1488,9 +1629,9 @@ version = "0.0.1"
 
 [[SciMLBase]]
 deps = ["ArrayInterface", "CommonSolve", "ConstructionBase", "Distributed", "DocStringExtensions", "IteratorInterfaceExtensions", "LinearAlgebra", "Logging", "RecipesBase", "RecursiveArrayTools", "StaticArrays", "Statistics", "Tables", "TreeViews"]
-git-tree-sha1 = "ad2c7f08e332cc3bb05d33026b71fa0ef66c009a"
+git-tree-sha1 = "b3d23aa4e5f621b574b3b0d41c62c8624d27192a"
 uuid = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
-version = "1.19.4"
+version = "1.19.5"
 
 [[Scratch]]
 deps = ["Dates"]
@@ -1571,21 +1712,21 @@ deps = ["LinearAlgebra", "SparseArrays"]
 uuid = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [[StatsAPI]]
-git-tree-sha1 = "1958272568dc176a1d881acb797beb909c785510"
+git-tree-sha1 = "0f2aa8e32d511f758a2ce49208181f7733a0936a"
 uuid = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
-version = "1.0.0"
+version = "1.1.0"
 
 [[StatsBase]]
 deps = ["DataAPI", "DataStructures", "LinearAlgebra", "LogExpFunctions", "Missings", "Printf", "Random", "SortingAlgorithms", "SparseArrays", "Statistics", "StatsAPI"]
-git-tree-sha1 = "eb35dcc66558b2dda84079b9a1be17557d32091a"
+git-tree-sha1 = "2bb0cb32026a66037360606510fca5984ccc6b75"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
-version = "0.33.12"
+version = "0.33.13"
 
 [[StatsFuns]]
 deps = ["ChainRulesCore", "InverseFunctions", "IrrationalConstants", "LogExpFunctions", "Reexport", "Rmath", "SpecialFunctions"]
-git-tree-sha1 = "385ab64e64e79f0cd7cfcf897169b91ebbb2d6c8"
+git-tree-sha1 = "bedb3e17cc1d94ce0e6e66d3afa47157978ba404"
 uuid = "4c63d2b9-4356-54db-8cca-17b64c39e42c"
-version = "0.9.13"
+version = "0.9.14"
 
 [[SteadyStateDiffEq]]
 deps = ["DiffEqBase", "DiffEqCallbacks", "LinearAlgebra", "NLsolve", "Reexport", "SciMLBase"]
@@ -1691,10 +1832,10 @@ uuid = "ac1d9e8a-700a-412c-b207-f0111f4b6c0d"
 version = "0.1.8"
 
 [[TikzGraphs]]
-deps = ["LaTeXStrings", "LightGraphs", "TikzPictures"]
-git-tree-sha1 = "48932ba660bc8cefc0aa9519ba79d63082aea892"
+deps = ["Graphs", "LaTeXStrings", "TikzPictures"]
+git-tree-sha1 = "791278b3e97ff9e00fe00af91c7f2583a8100321"
 uuid = "b4f28e30-c73f-5eaf-a395-8a9db949a742"
-version = "1.2.0"
+version = "1.3.0"
 
 [[TikzPictures]]
 deps = ["LaTeXStrings", "Poppler_jll", "Requires", "Tectonic"]
@@ -1762,9 +1903,9 @@ version = "1.9.2"
 
 [[VectorizationBase]]
 deps = ["ArrayInterface", "CPUSummary", "HostCPUFeatures", "Hwloc", "IfElse", "LayoutPointers", "Libdl", "LinearAlgebra", "SIMDTypes", "Static"]
-git-tree-sha1 = "5239606cf3552aff43d79ecc75b1af1ce4625109"
+git-tree-sha1 = "17e5847bb36730d90801170ecd0ce4041a3dde86"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.21.21"
+version = "0.21.22"
 
 [[VertexSafeGraphs]]
 deps = ["Graphs"]
@@ -1779,10 +1920,10 @@ uuid = "a2964d1f-97da-50d4-b82a-358c7fce9d89"
 version = "1.19.0+0"
 
 [[Wayland_protocols_jll]]
-deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "Wayland_jll"]
-git-tree-sha1 = "2839f1c1296940218e35df0bbb220f2a79686670"
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "66d72dc6fcc86352f01676e8f0f698562e60510f"
 uuid = "2381bf8a-dfd0-557d-9999-79630e7b1b91"
-version = "1.18.0+4"
+version = "1.23.0+0"
 
 [[XML2_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Libiconv_jll", "Pkg", "Zlib_jll"]
@@ -1990,22 +2131,23 @@ version = "0.9.1+5"
 """
 
 # ╔═╡ Cell order:
-# ╠═661c49d0-53b4-4ba3-beb4-4dd822e6d961
-# ╠═052bd3fd-3a9c-43a3-8e90-e3604fb8b1e6
 # ╠═54506f08-427c-11ec-0076-8b506e1f844c
-# ╠═a5297339-727c-4805-8ae0-ba5b1a2a2390
+# ╠═52e35df3-15da-4fe1-9513-c77d4f8ce521
 # ╠═c515acf6-fe6f-497e-b5d9-f71f0ad9b526
 # ╠═ca3c2847-a87b-45c2-bf3a-41ffdde668b7
 # ╟─68871a87-ad80-40c1-98fe-bbe0b8f22913
 # ╠═de3abe69-dcdc-44e2-b9ec-84bad793c42f
 # ╠═787f4091-e395-4182-8f70-f00a3f824abb
 # ╠═19876b1e-da88-4d43-8248-5d5c429be1d7
+# ╠═bdfd4f02-9966-445b-a0ff-d41fc7683d6e
+# ╠═ba50df3e-8fe9-447c-b686-c9cfc14d4696
 # ╟─f61ecce7-ec37-4047-9f5f-d87ac1c3e71e
 # ╠═a23c4964-6658-4ce8-a676-fd8b50b05f17
 # ╟─8e86706b-ff60-48a7-ab74-6030a86acb54
 # ╠═db948f4a-a4a7-4616-9beb-ea78e3e72454
 # ╟─074cfb65-5537-40ee-8b29-55c1b913f98b
 # ╠═a860a067-8550-4bd4-8aa8-44838978f77b
+# ╠═7eeb5a3d-a817-4dde-8809-cc2e6ab757c4
 # ╟─83c18c6a-0daf-477f-8c41-0ae393c13467
 # ╠═d18a8a59-90ba-45b8-9569-5f21ca8a5be7
 # ╠═aef32716-98b9-4e8a-9ccd-6a5687f3675b
@@ -2027,6 +2169,29 @@ version = "0.9.1+5"
 # ╟─6fe4a4e5-4fbd-4c74-8e97-34e51a9fa8e2
 # ╠═7e913617-3967-4fe0-b225-328de916c57e
 # ╠═81f65b7f-01c5-4f57-9ec0-ad1d029b9807
-# ╠═899148e8-72aa-495e-92ca-2ab3f50609d8
+# ╟─899148e8-72aa-495e-92ca-2ab3f50609d8
+# ╠═3aa51315-9f33-49e3-b7cc-995a0927664d
+# ╠═21ed47b0-2948-495a-b4c6-fb0d75264a88
+# ╠═9358c530-f681-4130-befb-5bbc08cc09ea
+# ╠═1d9ea49c-5c57-466f-b339-a4976b23d15e
+# ╠═0cd21d75-13a1-4e4d-94a6-3c48e39c63c5
+# ╠═42444dfb-d49b-4dde-ac5c-d5d4262430c7
+# ╠═3388debe-f326-4e9b-9589-85ee1a5de9a7
+# ╠═d691e252-dc6b-4303-a0ba-ee2ffc7b7d4c
+# ╠═474575e2-edfd-4b37-bd4b-83ddaa6eaced
+# ╠═69726107-5921-4a0d-97f8-ed784bf5eb15
+# ╠═4247e3c0-49b0-445c-a175-1fc3664f1545
+# ╠═66469a7a-744a-4b5a-aad9-16de0c38bf0c
+# ╠═6143e304-2ef8-4355-baeb-4c8998a388ad
+# ╠═3fdb5d59-02f8-447e-9bd6-d97eaf3285d5
+# ╠═1ae6eccd-1388-4b4a-b70f-fb5199d649da
+# ╠═d1e86dbf-d4b3-4032-8b19-3928f140da91
+# ╠═639d09b0-845d-4414-9f99-d6fe6cb2790c
+# ╠═fee809a0-ed01-45d1-9a4d-a43e4fc5170c
+# ╠═1e383174-0bd3-4924-b109-c009aaabcce5
+# ╠═7569ed82-d18f-4468-8c87-0073e4ba6eaf
+# ╠═51d0e2bf-b29e-4b8c-95bc-d64d245dea10
+# ╠═4f9c4211-b933-4b7f-9826-1ed6d4efccce
+# ╠═a3aa501c-6676-45d1-9e98-2859b02de8bb
 # ╟─00000000-0000-0000-0000-000000000001
 # ╟─00000000-0000-0000-0000-000000000002
